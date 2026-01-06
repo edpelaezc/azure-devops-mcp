@@ -1,0 +1,247 @@
+{
+  "info": {
+    "name": "Azure DevOps MCP SSE Wrapper",
+    "description": "Test collection for the Azure DevOps MCP SSE Wrapper. This wrapper exposes the Microsoft Azure DevOps MCP server via HTTPS/SSE for remote access by AI agents and applications.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "Dj4lq8gmJdYgZoRzennB11qOvpixgUsJ",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        },
+        "description": "Check if the wrapper is running and healthy. This endpoint returns the current status, organization, project, and uptime."
+      },
+      "response": []
+    },
+    {
+      "name": "2. MCP - Unauthenticated (Should Fail)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"postman\",\"version\":\"1.0.0\"}}}\n"
+        },
+        "url": {
+          "raw": "{{base_url}}/mcp",
+          "host": ["{{base_url}}"],
+          "path": ["mcp"]
+        },
+        "description": "This request should fail with 401 Unauthorized because no API key is provided."
+      },
+      "response": []
+    },
+    {
+      "name": "3. MCP - Invalid API Key (Should Fail)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid-key-12345"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"postman\",\"version\":\"1.0.0\"}}}\n"
+        },
+        "url": {
+          "raw": "{{base_url}}/mcp",
+          "host": ["{{base_url}}"],
+          "path": ["mcp"]
+        },
+        "description": "This request should fail with 403 Forbidden because an invalid API key is provided."
+      },
+      "response": []
+    },
+    {
+      "name": "4. MCP - Initialize",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"postman\",\"version\":\"1.0.0\"}}}\n"
+        },
+        "url": {
+          "raw": "{{base_url}}/mcp",
+          "host": ["{{base_url}}"],
+          "path": ["mcp"]
+        },
+        "description": "Initialize the MCP connection. This establishes a session with the Azure DevOps MCP server and returns the server capabilities.\n\nNote: Keep this request open to receive SSE events. In Postman, you'll see 'data:' prefixed JSON responses."
+      },
+      "response": []
+    },
+    {
+      "name": "5. MCP - List All Tools",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"postman\",\"version\":\"1.0.0\"}}}\n{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{}}\n"
+        },
+        "url": {
+          "raw": "{{base_url}}/mcp",
+          "host": ["{{base_url}}"],
+          "path": ["mcp"]
+        },
+        "description": "List all available MCP tools. This sends two messages:\n1. Initialize the connection\n2. Request the list of tools\n\nYou'll receive SSE events with all available Azure DevOps tools (work items, repositories, pipelines, etc.)"
+      },
+      "response": []
+    },
+    {
+      "name": "6. MCP - Get Work Items",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"postman\",\"version\":\"1.0.0\"}}}\n{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"work-items_getWorkItems\",\"arguments\":{\"top\":5}}}\n"
+        },
+        "url": {
+          "raw": "{{base_url}}/mcp",
+          "host": ["{{base_url}}"],
+          "path": ["mcp"]
+        },
+        "description": "Get the top 5 work items from Azure DevOps. This demonstrates calling an actual MCP tool.\n\nMessages sent:\n1. Initialize\n2. Call the work-items_getWorkItems tool with top=5\n\nYou'll receive work items data from your Azure DevOps project."
+      },
+      "response": []
+    },
+    {
+      "name": "7. MCP - Get Recent Builds",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"postman\",\"version\":\"1.0.0\"}}}\n{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"pipelines_getBuilds\",\"arguments\":{\"top\":5}}}\n"
+        },
+        "url": {
+          "raw": "{{base_url}}/mcp",
+          "host": ["{{base_url}}"],
+          "path": ["mcp"]
+        },
+        "description": "Get the 5 most recent builds from Azure DevOps pipelines.\n\nMessages sent:\n1. Initialize\n2. Call the pipelines_getBuilds tool with top=5\n\nYou'll receive build information including status, dates, and results."
+      },
+      "response": []
+    },
+    {
+      "name": "8. MCP - Get Repositories",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"postman\",\"version\":\"1.0.0\"}}}\n{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"repositories_getRepositories\",\"arguments\":{}}}\n"
+        },
+        "url": {
+          "raw": "{{base_url}}/mcp",
+          "host": ["{{base_url}}"],
+          "path": ["mcp"]
+        },
+        "description": "Get all Git repositories from Azure DevOps.\n\nMessages sent:\n1. Initialize\n2. Call the repositories_getRepositories tool\n\nYou'll receive a list of all repositories in your project."
+      },
+      "response": []
+    },
+    {
+      "name": "9. MCP - Search Work Items",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"postman\",\"version\":\"1.0.0\"}}}\n{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"work-items_queryWorkItems\",\"arguments\":{\"wiql\":\"SELECT [System.Id], [System.Title], [System.State] FROM WorkItems WHERE [System.WorkItemType] = 'Bug' ORDER BY [System.CreatedDate] DESC\"}}}\n"
+        },
+        "url": {
+          "raw": "{{base_url}}/mcp",
+          "host": ["{{base_url}}"],
+          "path": ["mcp"]
+        },
+        "description": "Search for Bug work items using WIQL (Work Item Query Language).\n\nMessages sent:\n1. Initialize\n2. Query work items with WIQL to find bugs\n\nYou'll receive bugs sorted by creation date."
+      },
+      "response": []
+    }
+  ]
+}
