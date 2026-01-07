@@ -1,20 +1,20 @@
 {
-  "name": "azdo-mcp-sse-wrapper",
-  "version": "1.0.0",
+  "name": "azdo-mcp-streamable-http-wrapper",
+  "version": "2.0.0",
   "type": "module",
-  "description": "SSE wrapper for Microsoft Azure DevOps MCP server - Enables remote network access for AI agents",
+  "description": "Streamable HTTP wrapper for Microsoft Azure DevOps MCP server - Enables remote network access for AI agents",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node test-local.js"
+    "test": "node test-repos.js"
   },
   "keywords": [
     "mcp",
     "model-context-protocol",
     "azure-devops",
-    "sse",
-    "server-sent-events",
+    "streamable-http",
+    "http-streaming",
     "ai-agent",
     "wrapper",
     "remote-access"
